@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeerCheck — Decentralized Academic Peer Review</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3a;
+      --accent: #7c6af7;
+      --accent2: #4ecdc4;
+      --accent3: #f7c06a;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+      --danger: #f76a6a;
+      --success: #6af7a0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blob */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.4rem;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .chain-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124,106,247,0.1);
+      border: 1px solid rgba(124,106,247,0.2);
+      color: var(--accent);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      margin-top: 16px;
+      letter-spacing: 0.08em;
+    }
+
+    .chain-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Form */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 40px;
+    }
+
+    .form-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+      outline: none;
+      resize: vertical;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    textarea { min-height: 130px; }
+
+    .char-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), #9b8cf9);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.02em;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: rgba(124,106,247,0.08);
+      border: 1px solid rgba(124,106,247,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .status-bar.visible { display: flex; }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(124,106,247,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Certificate */
+    .certificate {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .certificate.visible { display: block; }
+
+    .cert-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 16px;
+    }
+
+    .cert-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .consensus-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 100px;
+      letter-spacing: 0.06em;
+    }
+
+    .consensus-ACCEPTED { background: rgba(106,247,160,0.1); color: var(--success); border: 1px solid rgba(106,247,160,0.2); }
+    .consensus-REEVALUATED { background: rgba(247,192,106,0.1); color: var(--accent3); border: 1px solid rgba(247,192,106,0.2); }
+    .consensus-INCONCLUSIVE { background: rgba(247,106,106,0.1); color: var(--danger); border: 1px solid rgba(247,106,106,0.2); }
+
+    .cert-body { padding: 28px; }
+
+    /* Score display */
+    .score-section {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 28px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .score-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid;
+      flex-shrink: 0;
+    }
+
+    .score-circle.grade-A { border-color: var(--success); color: var(--success); }
+    .score-circle.grade-B { border-color: var(--accent2); color: var(--accent2); }
+    .score-circle.grade-C { border-color: var(--accent3); color: var(--accent3); }
+    .score-circle.grade-D { border-color: #f7a06a; color: #f7a06a; }
+    .score-circle.grade-F { border-color: var(--danger); color: var(--danger); }
+
+    .score-number {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .score-grade {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    /* Criteria bars */
+    .criteria { display: flex; flex-direction: column; gap: 10px; }
+
+    .criterion {
+      display: grid;
+      grid-template-columns: 120px 1fr 40px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .criterion-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .criterion-score {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* Flags */
+    .flags-section {
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    .flags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .flag-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .flag-tag.ok { background: rgba(106,247,160,0.08); color: var(--success); border: 1px solid rgba(106,247,160,0.15); }
+    .flag-tag.warn { background: rgba(247,192,106,0.08); color: var(--accent3); border: 1px solid rgba(247,192,106,0.15); }
+    .flag-tag.bad { background: rgba(247,106,106,0.08); color: var(--danger); border: 1px solid rgba(247,106,106,0.15); }
+
+    /* Reasoning */
+    .reasoning-box {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 24px;
+      border-left: 3px solid var(--accent);
+    }
+
+    /* Certificate footer */
+    .cert-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hash-display {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .hash-display span {
+      color: var(--accent);
+    }
+
+    .share-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+
+    .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Error */
+    .error-box {
+      display: none;
+      background: rgba(247,106,106,0.08);
+      border: 1px solid rgba(247,106,106,0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--danger);
+    }
+
+    .error-box.visible { display: block; }
+
+    /* Recent verdicts */
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    .verdict-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 48px; }
+
+    .verdict-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .verdict-item:hover { border-color: rgba(124,106,247,0.3); }
+
+    .verdict-score {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .verdict-link {
+      font-size: 0.82rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .verdict-hash {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .grade-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+
+    .grade-pill.A { background: rgba(106,247,160,0.1); color: var(--success); }
+    .grade-pill.B { background: rgba(78,205,196,0.1); color: var(--accent2); }
+    .grade-pill.C { background: rgba(247,192,106,0.1); color: var(--accent3); }
+    .grade-pill.D { background: rgba(247,160,106,0.1); color: #f7a06a; }
+    .grade-pill.F { background: rgba(247,106,106,0.1); color: var(--danger); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* Reputation levels */
+    .rep-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: 100px;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .rep-NOVICE      { background: rgba(112,112,160,0.1); color: var(--muted); border: 1px solid rgba(112,112,160,0.2); }
+    .rep-CONTRIBUTOR { background: rgba(78,205,196,0.1);  color: var(--accent2); border: 1px solid rgba(78,205,196,0.2); }
+    .rep-ESTABLISHED { background: rgba(124,106,247,0.1); color: var(--accent);  border: 1px solid rgba(124,106,247,0.2); }
+    .rep-EXPERT      { background: rgba(247,192,106,0.1); color: var(--accent3); border: 1px solid rgba(247,192,106,0.2); }
+    .rep-LUMINARY    { background: rgba(106,247,160,0.1); color: var(--success); border: 1px solid rgba(106,247,160,0.2); }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .profile-stat {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .profile-stat-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+
+    .profile-stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 3px;
+    }
+
+    .grade-breakdown {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .grade-stat {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--muted);
+    }
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: 1fr; }
+      .score-section { grid-template-columns: 1fr; }
+      .score-circle { margin: 0 auto; }
+      .criterion { grid-template-columns: 90px 1fr 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">🔬</div>
+      <h1>PeerCheck</h1>
+    </div>
+    <p class="tagline">Decentralized AI Peer Review — Powered by GenLayer</p>
+    <div class="chain-badge">BRADBURY TESTNET · FUTURE OF WORK</div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-submissions">0</div>
+      <div class="stat-label">Papers Reviewed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">∞</div>
+      <div class="stat-label">Validator Nodes</div>
+    </div>
+
+  </div>
+
+  <!-- Form -->
+  <div class="form-card">
+    <div class="form-title">📄 Submit Paper for Review</div>
+
+    <div class="form-group">
+      <label>Paper Abstract <span style="color:var(--danger)">*</span></label>
+      <textarea id="abstract" placeholder="Paste your paper's abstract here (minimum 100 characters)..."></textarea>
+      <div class="char-count"><span id="char-count">0</span> / 100 min</div>
+    </div>
+
+    <div class="form-group">
+      <label>Paper Link <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="link" placeholder="https://arxiv.org/abs/... or https://pubmed.ncbi.nlm.nih.gov/..." />
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitPaper()">
+      Submit for AI Peer Review
+    </button>
+
+    <div class="status-bar" id="status-bar">
+      <div class="spinner"></div>
+      <span id="status-text">Submitting to GenLayer network...</span>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- Certificate -->
+  <div class="certificate" id="certificate">
+    <div class="cert-header">
+      <div class="cert-title">
+        🏛️ On-Chain Peer Review Certificate
+      </div>
+      <div class="consensus-badge" id="consensus-badge">ACCEPTED</div>
+    </div>
+    <div class="cert-body">
+      <div class="score-section">
+        <div class="score-circle" id="score-circle">
+          <div class="score-number" id="score-number">--</div>
+          <div class="score-grade" id="score-grade">--</div>
+        </div>
+        <div class="criteria">
+          <div class="criterion">
+            <span class="criterion-label">Methodology</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-method" style="width:0%"></div></div>
+            <span class="criterion-score" id="score-method">--</span>
+          </div>
+          <div class="criterion">
+            <span class="criterion-label">Citations</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-cit" style="width:0%"></div></div>
+            <span class="criterion-score" id="score-cit">--</span>
+          </div>
+          <div class="criterion">
+            <span class="criterion-label">Logic</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-logic" style="width:0%"></div></div>
+            <span class="criterion-score" id="score-logic">--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flags-section">
+        <div class="section-label">Flags</div>
+        <div class="flags-list" id="flags-list"></div>
+      </div>
+
+      <div class="section-label">AI Reasoning</div>
+      <div class="reasoning-box" id="reasoning-box">—</div>
+    </div>
+    <div class="cert-footer">
+      <div class="hash-display">PAPER HASH: <span id="paper-hash">—</span></div>
+      <button class="share-btn" onclick="copyHash()">COPY HASH</button>
+    </div>
+  </div>
+
+  <!-- Recent Verdicts -->
+  <div class="section-title">Recent Verdicts</div>
+  <div class="verdict-list" id="verdict-list">
+    <div style="color: var(--muted); font-size: 0.85rem; padding: 12px 0;">
+      No verdicts yet. Submit a paper to get started.
+    </div>
+  </div>
+
+  <!-- Researcher Profile Lookup -->
+  <div class="section-title">Researcher Profile</div>
+  <div class="form-card" style="margin-bottom: 40px;">
+    <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px;">
+      Look up any researcher's on-chain reputation — verifiable by journals and grant organizations.
+    </div>
+    <div style="display:flex; gap:10px;">
+      <input type="text" id="profile-address" placeholder="0x wallet address..." style="flex:1; margin-top:0;" />
+      <button class="submit-btn" style="width:auto; padding: 12px 20px; margin-top:0;" onclick="lookupProfile()">
+        Look Up
+      </button>
+    </div>
+    <div class="profile-card" id="profile-card" style="display:none; margin-top:20px;"></div>
+  </div>
+
+</div>
+
+<footer>
+  Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> by Aqeelerh · Bradbury Builders Hackathon 2026 · <a href="https://dorahacks.io" target="_blank">DoraHacks</a>
+</footer>
+
+<!-- GenLayer JS SDK Integration -->
+<script>
+  const CONTRACT_ADDRESS = "0xa0643eE708b52b79FC49093eEACbeEeeFf5Fd87F";
+  const GENLAYER_RPC = "https://rpc-bradbury.genlayer.com";
+
+  // Read contract state - pure JSON-RPC, no SDK needed
+  async function callContract(method, args = {}) {
+    try {
+      const res = await fetch(GENLAYER_RPC, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: Date.now(),
+          method: "gen_call",
+          params: [{
+            to: CONTRACT_ADDRESS,
+            from: "0x0000000000000000000000000000000000000000",
+            data: { method, args }
+          }]
+        })
+      });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+      return json.result;
+    } catch(e) {
+      throw e;
+    }
+  }
+
+  // Write to contract via wallet
+  async function sendTransaction(method, args = {}) {
+    if (!window.ethereum) {
+      throw new Error("No wallet found. Please install MetaMask or Rabby, then add GenLayer Bradbury: RPC https://rpc-bradbury.genlayer.com, Chain ID 4221.");
+    }
+
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const from = accounts[0];
+
+    const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
+    const chainId = parseInt(chainIdHex, 16);
+    if (chainId !== 4221) {
+      throw new Error("Wrong network. Switch your wallet to GenLayer Bradbury Testnet (Chain ID: 4221, RPC: https://rpc-bradbury.genlayer.com).");
+    }
+
+    const txHash = await window.ethereum.request({
+      method: "eth_sendTransaction",
+      params: [{
+        from: from,
+        to: CONTRACT_ADDRESS,
+        data: JSON.stringify({ method, args }),
+        gas: "0x200000"
+      }]
+    });
+    return txHash;
+  }
+
+  async function waitForTx(txHash) {
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const res = await fetch(GENLAYER_RPC, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: Date.now(),
+            method: "gen_getTransactionReceipt",
+            params: [txHash]
+          })
+        });
+        const json = await res.json();
+        if (json.result) {
+          const s = json.result.status;
+          if (s === "FINALIZED" || s === "ACCEPTED") return json.result;
+          if (s === "REJECTED") throw new Error("Transaction rejected by validators.");
+        }
+      } catch(e) {
+        if (e.message && e.message.includes("rejected")) throw e;
+      }
+      updateStatus("Validators processing... (" + ((i+1)*3) + "s elapsed)");
+    }
+    throw new Error("Timed out. Check: https://explorer-bradbury.genlayer.com");
+  }
+
+  // UI helpers
+  function setStatus(msg) {
+    document.getElementById("status-bar").classList.add("visible");
+    document.getElementById("status-text").textContent = msg;
+  }
+  function clearStatus() {
+    document.getElementById("status-bar").classList.remove("visible");
+  }
+  function updateStatus(msg) {
+    document.getElementById("status-text").textContent = msg;
+  }
+  function showError(msg) {
+    const b = document.getElementById("error-box");
+    b.textContent = "⚠️ " + msg;
+    b.classList.add("visible");
+  }
+  function clearError() {
+    document.getElementById("error-box").classList.remove("visible");
+  }
+
+  function renderCertificate(cert) {
+    document.getElementById("certificate").classList.add("visible");
+    const circle = document.getElementById("score-circle");
+    circle.className = "score-circle grade-" + cert.grade;
+    document.getElementById("score-number").textContent = cert.score;
+    document.getElementById("score-grade").textContent = "Grade " + cert.grade;
+    document.getElementById("bar-method").style.width = cert.methodology + "%";
+    document.getElementById("bar-cit").style.width = cert.citations + "%";
+    document.getElementById("bar-logic").style.width = cert.logic + "%";
+    document.getElementById("score-method").textContent = cert.methodology;
+    document.getElementById("score-cit").textContent = cert.citations;
+    document.getElementById("score-logic").textContent = cert.logic;
+    const badge = document.getElementById("consensus-badge");
+    badge.textContent = "ACCEPTED";
+    badge.className = "consensus-badge consensus-ACCEPTED";
+    const flagsEl = document.getElementById("flags-list");
+    flagsEl.innerHTML = "";
+    const flags = (cert.flags || "no_issues").split(",");
+    flags.forEach(function(f) {
+      const tag = document.createElement("span");
+      const trimmed = f.trim();
+      tag.className = "flag-tag " + (trimmed === "no_issues" ? "ok" : "bad");
+      tag.textContent = trimmed.replace(/_/g, " ");
+      flagsEl.appendChild(tag);
+    });
+    document.getElementById("reasoning-box").textContent = cert.reasoning || "—";
+    document.getElementById("paper-hash").textContent = cert.paper_hash || "—";
+  }
+
+  function addToRecentList(cert) {
+    const list = document.getElementById("verdict-list");
+    const placeholder = list.querySelector("div:not(.verdict-item)");
+    if (placeholder) placeholder.remove();
+    const item = document.createElement("div");
+    item.className = "verdict-item";
+    item.innerHTML =
+      '<div class="verdict-score" style="color:var(--accent)">' + cert.score + '</div>' +
+      '<div><div class="verdict-link">' + cert.link + '</div>' +
+      '<div class="verdict-hash">' + cert.paper_hash + '</div></div>' +
+      '<div class="grade-pill ' + cert.grade + '">' + cert.grade + '</div>';
+    list.prepend(item);
+  }
+
+  // Profile lookup - exposed globally
+  window.lookupProfile = function() {
+    const address = document.getElementById("profile-address").value.trim();
+    if (!address) { alert("Please enter a wallet address."); return; }
+    const card = document.getElementById("profile-card");
+    card.style.display = "block";
+    card.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Loading profile...</div>';
+
+    callContract("get_profile", { address: address })
+      .then(function(p) {
+        if (!p || p.error) {
+          card.innerHTML = '<div style="color:var(--danger);font-size:0.85rem;">' + (p && p.error ? p.error : "No profile found. Submit a paper first.") + '</div>';
+          return;
+        }
+        const levels = { NOVICE:"rep-NOVICE", CONTRIBUTOR:"rep-CONTRIBUTOR", ESTABLISHED:"rep-ESTABLISHED", EXPERT:"rep-EXPERT", LUMINARY:"rep-LUMINARY" };
+        card.innerHTML =
+          '<div class="rep-badge ' + (levels[p.reputation_level] || "rep-NOVICE") + '">' + p.reputation_level + '</div>' +
+          '<div class="profile-grid">' +
+            '<div class="profile-stat"><div class="profile-stat-value">' + p.total_submissions + '</div><div class="profile-stat-label">Papers</div></div>' +
+            '<div class="profile-stat"><div class="profile-stat-value">' + p.average_score + '</div><div class="profile-stat-label">Avg Score</div></div>' +
+            '<div class="profile-stat"><div class="profile-stat-value">' + p.highest_score + '</div><div class="profile-stat-label">Best Score</div></div>' +
+          '</div>' +
+          '<div class="section-label" style="margin-bottom:8px;">Grade Breakdown</div>' +
+          '<div class="grade-breakdown">' +
+            '<div class="grade-stat">A: ' + p.grade_breakdown.A + '</div>' +
+            '<div class="grade-stat">B: ' + p.grade_breakdown.B + '</div>' +
+            '<div class="grade-stat">C: ' + p.grade_breakdown.C + '</div>' +
+            '<div class="grade-stat">D: ' + p.grade_breakdown.D + '</div>' +
+            '<div class="grade-stat">F: ' + p.grade_breakdown.F + '</div>' +
+          '</div>';
+      })
+      .catch(function(e) {
+        card.innerHTML = '<div style="color:var(--danger);font-size:0.85rem;">' + e.message + '</div>';
+      });
+  };
+
+  // Load stats on page load
+  function loadStats() {
+    callContract("get_submission_count")
+      .then(function(count) {
+        document.getElementById("stat-submissions").textContent = count !== null && count !== undefined ? String(count) : "0";
+      })
+      .catch(function(e) { console.log("Count:", e.message); });
+
+    callContract("get_all_certificates")
+      .then(function(certs) {
+        if (Array.isArray(certs) && certs.length > 0) {
+          document.getElementById("verdict-list").innerHTML = "";
+          certs.forEach(function(c) { addToRecentList(c); });
+        }
+      })
+      .catch(function(e) { console.log("Certs:", e.message); });
+  }
+
+  // Submit paper - exposed globally
+  window.submitPaper = function() {
+    clearError();
+    const abstract = document.getElementById("abstract").value.trim();
+    const link = document.getElementById("link").value.trim();
+
+    if (abstract.length < 100) { showError("Abstract must be at least 100 characters."); return; }
+    if (!link.startsWith("http")) { showError("Please enter a valid URL starting with https://"); return; }
+
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    setStatus("Connecting wallet...");
+
+    sendTransaction("submit_paper", { abstract: abstract, link: link })
+      .then(function(txHash) {
+        setStatus("Transaction sent! AI validators are evaluating your paper...");
+        return waitForTx(txHash);
+      })
+      .then(function() {
+        setStatus("Consensus reached! Fetching certificate...");
+        return new Promise(function(r) { setTimeout(r, 3000); });
+      })
+      .then(function() {
+        return callContract("get_all_certificates");
+      })
+      .then(function(certs) {
+        if (Array.isArray(certs) && certs.length > 0) {
+          const latest = certs[certs.length - 1];
+          return callContract("get_certificate", { paper_hash: latest.paper_hash });
+        }
+        return null;
+      })
+      .then(function(cert) {
+        if (cert && !cert.error) {
+          clearStatus();
+          renderCertificate(cert);
+          addToRecentList(cert);
+        }
+        return callContract("get_submission_count");
+      })
+      .then(function(count) {
+        document.getElementById("stat-submissions").textContent = String(count);
+      })
+      .catch(function(err) {
+        clearStatus();
+        showError(err.message || "Transaction failed. Make sure your wallet is on GenLayer Bradbury (Chain ID: 4221).");
+      })
+      .finally(function() {
+        btn.disabled = false;
+      });
+  };
+
+  // Copy hash
+  window.copyHash = function() {
+    const hash = document.getElementById("paper-hash").textContent;
+    navigator.clipboard.writeText(hash).catch(function(){});
+    const btn = document.querySelector(".share-btn");
+    btn.textContent = "COPIED!";
+    setTimeout(function() { btn.textContent = "COPY HASH"; }, 2000);
+  };
+
+  // Char counter
+  document.getElementById("abstract").addEventListener("input", function() {
+    const n = this.value.length;
+    const el = document.getElementById("char-count");
+    el.textContent = n;
+    el.style.color = n >= 100 ? "var(--success)" : "var(--danger)";
+  });
+
+  // Load on start
+  loadStats();
+</script>
+
+</body>
+</html>
