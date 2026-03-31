@@ -143,8 +143,8 @@ genlayer deploy --contract contracts/peercheck_contract.py --args 0
 
 ```bash
 genlayer write CONTRACT_ADDRESS submit_paper --args "YOUR ABSTRACT (min 100 chars)" "https://arxiv.org/abs/..."
-genlayer call CONTRACT_ADDRESS get_all_certificates
-genlayer call CONTRACT_ADDRESS get_profile --args "0xYOUR_WALLET"
+genlayer write CONTRACT_ADDRESS get_all_certificates
+genlayer write CONTRACT_ADDRESS get_profile --args "0xYOUR_WALLET"
 ```
 
 ---
