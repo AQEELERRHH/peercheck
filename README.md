@@ -157,14 +157,22 @@ peercheck/
 │   └── peercheck_contract.py
 ├── frontend/
 │   └── index.html
-└── README.md
+├── README.md     
+├── QA.md            
+└── ARTICLE.md       
 ```
 
 ---
 
+## 📖 Further Reading
+
+- [Full Article: The Peer Review Problem Has a $28B Price Tag](./ARTICLE.md)
+- [Q&A: Anticipated Questions and Answers](./QA.md)
+- [Published on Medium](https://medium.com/@zaaza/the-peer-review-problem-has-a-28-billion-price-tag-and-nobody-is-fixing-it-the-right-way-0585475b9283)
+
 ## Builder
 
-Built by **Aqeelerh** for the Bradbury Builders Hackathon 2026.
+Built by **Aqeelerh** https://x.com/aqeelerh for the Bradbury Builders Hackathon 2026.
 
 Academic peer review has real structural problems. GenLayer provides infrastructure that makes new approaches technically feasible. PeerCheck is a first step not a finished solution.
 
