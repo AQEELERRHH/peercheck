@@ -12,9 +12,9 @@
 | **Hackathon** | Bradbury Builders Hackathon by GenLayer |
 | **Track** | Future of Work |
 | **Builder** | Aqeelerh |
-| **Contract Address** | `0xa0643eE708b52b79FC49093eEACbeEeeFf5Fd87F` |
+| **Contract Address** | `0x5ec2345b1f472A29e8f206dCC2164A3506d4bD54` |
 | **Network** | GenLayer Bradbury Testnet (Chain ID: 4221) |
-| **Explorer** | [View Contract](https://explorer-bradbury.genlayer.com/address/0xa0643eE708b52b79FC49093eEACbeEeeFf5Fd87F) |
+| **Explorer** | [View Contract](https://explorer-bradbury.genlayer.com/address/0x5ec2345b1f472A29e8f206dCC2164A3506d4bD54) |
 
 ---
 
